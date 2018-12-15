@@ -16,29 +16,29 @@ class validatePhoneNumber():
         inval_num = []
         mod_num = []
         for row in raw_data:
-            rowDict = {fields[0]: row[0], fields[1]: row[1]}
-            resp = self.validate_mobile_entry(row)
-            if resp['result'] and not resp['e164_number']:
+            res = self.validate_mobile_entry(row)
+            if res['result'] and not res['e164_num']:
+                rowDict = {fields[0]: row[0], fields[1]: row[1], 'status':  'number is accpeted'}
                 val_num.append(rowDict)
-            elif resp['result'] and resp['e164_number']:
+            elif res['result']:
+                rowDict = {fields[0]: row[0], fields[1]: row[1], 'modified to': res['e164_num']}
                 mod_num.append(rowDict)
             else:
+                rowDict = {fields[0]: row[0], fields[1]: row[1], 'error message': res['msg']}
                 inval_num.append(rowDict)
         return {'val_num':val_num, 'inval_num':inval_num, 'mod_num':mod_num}
 
     def validate_mobile_entry(self, row):
         #number_list = re.split(NUMBER_SPLIT_REGEX, row.strip())
         number = row[1]
-        if number == '':
-            return {'number':number, 'result':False, 'e164_number': None, "msg":"no value"}
-        else:
-            return self.validate_number(number)
+        return self.validate_number(number)
 
     def validate_number(self, number):
-        result = False
-        e164_num = None
         msg = "exception in validating number {}".format(number)
-        resp = {'number': number, 'result': result, 'e164_number': e164_num, "msg": msg}
+        resp = {'number': number, 'result': False, 'e164_num': None, "msg": msg}
+        if number == '':
+            resp['msg'] = "empty value"
+            return resp
         try:
             if number.startswith('+'):
                 number_obj = pn.parse(number)
@@ -52,15 +52,18 @@ class validatePhoneNumber():
                 msg = 'Number is not valid: {}.'.format(number)
                 log.error(msg)
             else:
-                e164_num = pn.format_number(number_obj, pn.PhoneNumberFormat.E164)
+                e164_num = pn.format_number(number_obj, pn.PhoneNumberFormat.E164)[1:]
                 if not e164_num:
                     msg = 'number {} could not be converted to E.164.'.format(number)
                     log.error(msg)
                 else:
-                    msg = 'number {} is valid'.format(number)
-                    print(msg)
                     resp['result'] = True
-                    resp['e164_num'] = e164_num
+                    if number == e164_num:
+                        msg = 'number {} is valid'.format(number)
+                    else:
+                        msg = 'number {} is corrected'.format(number)
+                        resp['e164_num'] = e164_num
+                    print(msg)
 
         except pn.NumberParseException as e:
             msg = '{}: {}'.format(e.args[0], number)
@@ -71,4 +74,4 @@ class validatePhoneNumber():
 if __name__ == "__main__":
     ph_obj = validatePhoneNumber()
     #print(ph_obj.validate_number("2.63717E+11"))
-    print(ph_obj.validate_numbers([['id','number'],['1234', '2.63717E+11']]))
+    print(ph_obj.validate_numbers([['id','number'],['1234', '+27717278645']]))
