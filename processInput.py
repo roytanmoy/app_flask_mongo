@@ -2,7 +2,7 @@ from validation import validatePhoneNumber as vpn
 import csv
 input_file = "aapl.csv"
 output_file = "final.csv"
-COUNTRY_CODE = 'ZAF'
+COUNTRY_CODE = 'ZA'
 
 class processPhoneNumber():
     def __init__(self):
@@ -16,29 +16,21 @@ class processPhoneNumber():
             #self.fields = next(csvreader)
             for row in csvreader:
                 self.rows.append(row)
+            self.fields = self.rows[0]
         return self.rows
 
     def process_Raw_Data(self, raw_data):
-        self.op_data = []
         resp = self.vpn.validate_numbers(raw_data)
-        valid_number= resp['valid_number']
-        invalid_number = resp['invalid_number']
-        modified_number = resp['modified_number']
-        for i in resp:
-            op_data = resp[rows]
-            rowDict = {self.fields[0]: row[0], self.fields[1]: row[1]}
-            self.op_data.append(rowDict)
+        for num_type in resp.keys():
+            op_file = num_type+'.csv'
+            op_data = resp[num_type]
+            self.write_to_CSV_File(op_data, op_file = op_file)
 
-        for row in self.rows:
-            rowDict = {self.fields[0]:row[0], self.fields[1]:row[1]}
-            self.op_data.append(rowDict)
-        self.write_to_CSV_File()
-
-    def write_to_CSV_File(self, op_file = output_file):
+    def write_to_CSV_File(self, op_data, op_file = output_file):
         with open(op_file, 'w') as csvfile:
             csvwriter = csv.DictWriter(csvfile, self.fields)
             csvwriter.writeheader()
-            csvwriter.writerows(self.op_data)
+            csvwriter.writerows(op_data)
 
 
 if __name__ == "__main__":
