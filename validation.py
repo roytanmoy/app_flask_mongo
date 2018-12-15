@@ -26,7 +26,7 @@ class validatePhoneNumber():
             else:
                 rowDict = {fields[0]: row[0], fields[1]: row[1], 'error message': res['msg']}
                 inval_num.append(rowDict)
-        return {'val_num':val_num, 'inval_num':inval_num, 'mod_num':mod_num}
+        return {'valid_numbers':val_num, 'invalid_numbers':inval_num, 'corrected_numbers':mod_num}
 
     def validate_mobile_entry(self, row):
         #number_list = re.split(NUMBER_SPLIT_REGEX, row.strip())
@@ -73,5 +73,4 @@ class validatePhoneNumber():
 
 if __name__ == "__main__":
     ph_obj = validatePhoneNumber()
-    #print(ph_obj.validate_number("2.63717E+11"))
     print(ph_obj.validate_numbers([['id','number'],['1234', '+27717278645']]))
