@@ -21,7 +21,6 @@ class processPhoneNumber():
 
     def process_Raw_Data(self, raw_data):
         resp = self.vpn.validate_numbers(raw_data)
-
         for num_type in resp.keys():
             if resp[num_type]:
                 op_file = num_type+'.csv'
