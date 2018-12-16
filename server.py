@@ -28,7 +28,7 @@ def allowed_file(filename):
 def upload_file():
    return render_template('upload.html')
 
-@app.route('/upload', methods=['POST'])
+@app.route('/phnumbers/upload', methods=['POST'])
 @auth.login_required
 def upload_csv():
     submitted_file = request.files['file']
