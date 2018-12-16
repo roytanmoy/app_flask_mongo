@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, make_response, abort, render_template
 from werkzeug.utils import secure_filename
 from flask_httpauth import HTTPBasicAuth
 from processInput import processUserInput
+from validation import validatePhoneNumber
 
 app = Flask(__name__)
 
@@ -55,15 +56,12 @@ def for_public_data(out):
             new_out[field] = out[field]
     return new_out
 
-@app.route('/file-data/<file_name>',  methods=['GET'])
+@app.route('/phnumbers/status/<phonenumber>',  methods=['GET'])
 @auth.login_required
-def get_file_data(file_name):
-    if get_files(file_name):
-        return send_from_directory(directory=UPLOAD_FOLDER, filename=file_name)
-    else:
-        abort(404)
+def phnumber_status(phonenumber):
+    return jsonify(get_phnumber_status(phonenumber))
 
-@app.route('/download-files/<file_name>',  methods=['GET'])
+@app.route('/phnumbers/file_status/<file_name>',  methods=['GET'])
 @auth.login_required
 def return_file(file_name):
     if get_files(file_name):
@@ -82,10 +80,13 @@ def get_files(fname = None):
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
-
 def process_input(file):
     ph_obj = processUserInput(file, process_data=True, storage_type='file')
     return ph_obj.read_from_CSV_File()
+
+def get_phnumber_status(phnumber):
+    val_obj = validatePhoneNumber(countryCode="ZA")
+    return val_obj.validate_number(phnumber)
 
 
 if __name__ == "__main__":
