@@ -17,11 +17,11 @@ class validatePhoneNumber():
         mod_num = []
         for row in raw_data:
             res = self.validate_mobile_entry(row)
-            if res['result'] and not res['e164_num']:
+            if res['result'] and res['number'] == res['e164_num']:
                 rowDict = {fields[0]: row[0], fields[1]: row[1], 'status':  'number is accpeted'}
                 val_num.append(rowDict)
             elif res['result']:
-                rowDict = {fields[0]: row[0], fields[1]: row[1], 'modified to': res['e164_num']}
+                rowDict = {fields[0]: row[0], fields[1]: row[1], 'corrected to': res['e164_num']}
                 mod_num.append(rowDict)
             else:
                 rowDict = {fields[0]: row[0], fields[1]: row[1], 'error message': res['msg']}
@@ -61,8 +61,8 @@ class validatePhoneNumber():
                     if number == e164_num:
                         msg = 'number {} is valid'.format(number)
                     else:
-                        msg = 'number {} is corrected'.format(number)
-                        resp['e164_num'] = e164_num
+                        msg = 'number {} is corrected to e164_number'.format(number)
+                    resp['e164_num'] = e164_num
                     print(msg)
 
         except pn.NumberParseException as e:
