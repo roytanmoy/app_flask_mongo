@@ -1,42 +1,59 @@
-from validation import validatePhoneNumber as vpn
 import csv
-input_file = "input_data.csv"
-output_file = "final.csv"
+import os
+from validation import validatePhoneNumber as vpn
+
+ip_file = "input_data.csv"
+op_file = "output_file.csv"
+
 COUNTRY_CODE = 'ZA'
 
-class processPhoneNumber():
-    def __init__(self):
+class processUserInput():
+    def __init__(self, input_file=ip_file, process_data=False, storage_type='file'):
+        self.input_file = input_file
+        self.process_data = process_data
+        self.storage_type=storage_type
         self.fields = []
-        self.rows = []
         self.vpn = vpn(COUNTRY_CODE)
 
-    def read_from_CSV_File(self, ip_file = input_file):
-        with open(ip_file, 'r') as csvfile:
+    def read_from_CSV_File(self):
+        rows = []
+        with open(self.input_file, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             #self.fields = next(csvreader)
             for row in csvreader:
-                self.rows.append(row)
-            self.fields = self.rows[0]
-        return self.rows
+                rows.append(row)
+            self.fields = rows[0]
+        if self.process_data:
+            return self.process_Raw_Data(rows)
+        else:
+            return rows
 
     def process_Raw_Data(self, raw_data):
         resp = self.vpn.validate_numbers(raw_data)
-        for num_type in resp.keys():
-            if resp[num_type]:
-                op_file = num_type+'.csv'
-                op_data = resp[num_type]
-                self.fields = op_data[0].keys()
-                self.write_to_CSV_File(op_data, op_file = op_file)
+        if self.storage_type == 'file':
+            file_names = []
+            path = os.path.split(self.input_file)[0]
 
-    def write_to_CSV_File(self, op_data, op_file = output_file):
-        with open(op_file, 'w') as csvfile:
+            for file_name in resp.keys():
+                if resp[file_name]:
+                    op_file = path + file_name+'.csv'
+                    file_names.append({file_name:op_file})
+                    op_data = resp[file_name]
+                    self.fields = op_data[0].keys()
+                    self.write_to_CSV_File(op_data, output_file = op_file)
+            return file_names
+        else:
+            return resp
+
+    def write_to_CSV_File(self, output_data, output_file = op_file):
+        with open(output_file, 'w') as csvfile:
             csvwriter = csv.DictWriter(csvfile, self.fields)
             csvwriter.writeheader()
-            csvwriter.writerows(op_data)
+            csvwriter.writerows(output_data)
 
 if __name__ == "__main__":
-    ph_obj = processPhoneNumber()
+    ph_obj = processUserInput(ip_file)
     raw_data = ph_obj.read_from_CSV_File()
     ph_obj.process_Raw_Data(raw_data)
-    #print (ph_obj.read_from_CSV_File(output_file))
+
 
