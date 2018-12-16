@@ -36,19 +36,19 @@ def upload_csv():
             os.mkdir(UPLOAD_FOLDER)
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file)
         submitted_file.save(filename)
-        process_input(filename)
+        op_file_names = process_input(filename)
         out = {
             'status': 'OK',
-            'filename': filename,
-            'message': "{filename} saved successful."
+            'filename': op_file_names,
+            'message': "{} saved successful.".format(filename)
             }
         return jsonify(out)
     return render_template('upload.html')
 
 def process_input(file):
     ph_obj = processUserInput(file, process_data=True, storage_type='file')
-    op_file_names = ph_obj.read_from_CSV_File()
-    print(op_file_names)
+    return ph_obj.read_from_CSV_File()
+
 
 
 if __name__ == "__main__":
