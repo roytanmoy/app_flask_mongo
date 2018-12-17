@@ -42,17 +42,6 @@ def proces_ipf(submitted_file):
     else:
         abort(404)
 
-@app.route('/<path:req_path>')
-def dir_listing(req_path):
-    abs_path = os.path.join(UPLOAD_FOLDER, req_path)
-    # Check if path is a file and serve
-    if os.path.isfile(abs_path):
-        return send_file(abs_path)
-    # Show directory contents
-    files = os.listdir(abs_path)
-    return render_template('file_list.html', files=files)
-
-
 @app.route("/", methods=['GET', 'POST'])
 def index():
     message = "Upload a csv file"
@@ -73,6 +62,16 @@ def upload_csv():
         message="Upload successful",
         result="/v/{}".format(op_file_names)
     )
+
+@app.route('/<path:req_path>')
+def dir_listing(req_path):
+    abs_path = os.path.join(UPLOAD_FOLDER, req_path)
+    # Check if path is a file and serve
+    if os.path.isfile(abs_path):
+        return send_file(abs_path)
+    # Show directory contents
+    files = os.listdir(abs_path)
+    return render_template('file_list.html', files=files)
 
 
 def for_public_data(out):
