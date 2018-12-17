@@ -57,10 +57,17 @@ def index():
 @auth.login_required
 def upload_csv():
     op_file_names = proces_ipf(request.files['file'])
+    links = []
+    for file in op_file_names:
+        fname = os.path.split(file)[1]
+        path = url_for('return_file', file_name=fname, _external=True)
+        links.append(path)
+    result = {}
+    result['uri'] = links
     return jsonify(
         status='OK',
         message="Upload successful",
-        result="/v/{}".format(op_file_names)
+        result="{}".format(result)
     )
 
 @app.route('/<path:req_path>')
