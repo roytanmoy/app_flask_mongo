@@ -35,7 +35,7 @@ class processUserInput():
             for fname in resp.keys():
                 if resp[fname]:
                     op_file = os.path.join(path, fname+'.csv')
-                    file_names.append({fname:op_file})
+                    file_names.append(op_file)
                     op_data = resp[fname]
                     self.fields = op_data[0].keys()
                     self.write_to_CSV_File(op_data, output_file = op_file)
