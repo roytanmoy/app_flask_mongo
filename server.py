@@ -1,15 +1,16 @@
 import os
-from flask import Flask, request, jsonify, make_response, abort, render_template, url_for, send_file, send_from_directory
+from flask import Flask, request, jsonify, make_response, abort, redirect, \
+                    render_template, url_for, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_httpauth import HTTPBasicAuth
 from processInput import processUserInput
 from validation import validatePhoneNumber
 
 app = Flask(__name__)
-
 UPLOAD_FOLDER = './upload/'
 ALLOWED_EXTENSIONS = set(['csv','json'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 auth = HTTPBasicAuth()
 @auth.get_password
@@ -17,16 +18,37 @@ def get_password(username):
     if username == 'admin':
         return 'nopass'
     return None
+
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 401)
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-def upload_file():
-   return render_template('upload.html')
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('index'))
+    files = dict(
+        zip(os.listdir(app.config['UPLOAD_FOLDER']),
+            ["/v/{}".format(k) for k in os.listdir(app.config['UPLOAD_FOLDER'])]))
+    return render_template('/index.html', file_list=files)
+
+@app.route("/")
+def phnumber_validation():
+    message = "Please upload the csv file"
+    return render_template('index.html', message=message)
 
 @app.route('/phnumbers/upload', methods=['POST'])
 @auth.login_required
@@ -44,8 +66,14 @@ def upload_csv():
             'filename': op_file_names,
             'message': "{} saved successful.".format(filename)
             }
-        return jsonify({'output':for_public_data(out)})
-    return render_template('upload.html')
+        #return jsonify({'output':for_public_data(out)})
+        return jsonify(
+            message="Upload successful",
+            result="/v/{}".format(filename)
+        )
+        return redirect(url_for('uploaded_file',
+                                filename=filename))
+    return render_template('index.html')
 
 def for_public_data(out):
     new_out = {}
@@ -75,10 +103,6 @@ def get_files(fname = None):
         return fname in fnames
     else:
         return fnames
-
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
 
 def process_input(file):
     ph_obj = processUserInput(file, process_data=True, storage_type='file')
