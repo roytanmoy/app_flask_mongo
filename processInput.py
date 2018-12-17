@@ -2,13 +2,12 @@ import csv
 import os
 from validation import validatePhoneNumber as vpn
 
-ip_file = "input_data.csv"
 op_file = "output_file.csv"
 
 COUNTRY_CODE = 'ZA'
 
 class processUserInput():
-    def __init__(self, input_file=ip_file, process_data=False, storage_type='file'):
+    def __init__(self, input_file, process_data=False, storage_type='file'):
         self.input_file = input_file
         self.process_data = process_data
         self.storage_type=storage_type
@@ -28,12 +27,11 @@ class processUserInput():
         else:
             return rows
 
-    def process_Raw_Data(self, raw_data):
+    def process_Raw_Data(self, raw_data, op_file = op_file):
         resp = self.vpn.validate_numbers(raw_data)
         if self.storage_type == 'file':
             file_names = []
             path = os.path.split(self.input_file)[0]
-
             for fname in resp.keys():
                 if resp[fname]:
                     op_file = os.path.join(path, fname+'.csv')
@@ -52,7 +50,7 @@ class processUserInput():
             csvwriter.writerows(output_data)
 
 if __name__ == "__main__":
-    ph_obj = processUserInput(ip_file)
+    ph_obj = processUserInput('./upload/input_data.csv')
     raw_data = ph_obj.read_from_CSV_File()
     ph_obj.process_Raw_Data(raw_data)
 
