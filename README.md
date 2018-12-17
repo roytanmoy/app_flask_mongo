@@ -1,15 +1,15 @@
-# Phone Number validation Application
+# Phone Number Validation Application
 
-The purpose of this app is to validate phone numbers based on the user input of csv file or a single phonenumber.
+The purpose of this app is to validate phone numbers based on the user input of csv file or a single phonenumber.  
 
 ## Getting Started
 
-For a given country (e.g., South Africa), a list of telephone numbers will be given by user.
-This app will be doing the below tasks -
-● Consume the provided file via any of the following means eg. upload from a browser / console call / API.
-● Test each number and check for correctness, attempt to correct incorrectly formed numbers
-and reject numbers that are invalid. (27831234567 is the correct format for this exercise).
-● Store the results appropriately to Temporary File.
+For a given country (e.g., South Africa), a list of telephone numbers will be given by user.  
+This app will be doing the below tasks -  
+● Consume the provided file via any of the following means eg. upload from a browser / console call / API.  
+● Test each number and check for correctness, attempt to correct incorrectly formed numbers  
+and reject numbers that are invalid. (27831234567 is the correct format for this exercise).  
+● Store the results appropriately to Temporary File.  
 
 ## Usages
  INPUT :
