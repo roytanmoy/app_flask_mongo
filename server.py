@@ -31,49 +31,49 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-
-@app.route("/", methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('index'))
-    files = dict(
-        zip(os.listdir(app.config['UPLOAD_FOLDER']),
-            ["/v/{}".format(k) for k in os.listdir(app.config['UPLOAD_FOLDER'])]))
-    return render_template('/index.html', file_list=files)
-
-@app.route("/")
-def phnumber_validation():
-    message = "Please upload the csv file"
-    return render_template('index.html', message=message)
-
-@app.route('/phnumbers/upload', methods=['POST'])
-@auth.login_required
-def upload_csv():
-    submitted_file = request.files['file']
+def proces_ipf(submitted_file):
     if submitted_file and allowed_file(submitted_file.filename):
         file = secure_filename(submitted_file.filename)
         if not os.path.exists(UPLOAD_FOLDER):
             os.mkdir(UPLOAD_FOLDER)
         filename = os.path.join(app.config['UPLOAD_FOLDER'], file)
         submitted_file.save(filename)
-        op_file_names = process_input(filename)
-        out = {
-            'status': 'OK',
-            'filename': op_file_names,
-            'message': "{} saved successful.".format(filename)
-            }
-        #return jsonify({'output':for_public_data(out)})
-        return jsonify(
-            message="Upload successful",
-            result="/v/{}".format(filename)
-        )
-        return redirect(url_for('uploaded_file',
-                                filename=filename))
-    return render_template('index.html')
+        return process_input(filename)
+    else:
+        abort(404)
+
+@app.route('/<path:req_path>')
+def dir_listing(req_path):
+    abs_path = os.path.join(UPLOAD_FOLDER, req_path)
+    # Check if path is a file and serve
+    if os.path.isfile(abs_path):
+        return send_file(abs_path)
+    # Show directory contents
+    files = os.listdir(abs_path)
+    return render_template('file_list.html', files=files)
+
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    message = "Upload a csv file"
+    if request.method == 'POST':
+        op_file_names = proces_ipf(request.files['file'])
+        return redirect(url_for('index'))
+    files = dict(
+        zip(os.listdir(app.config['UPLOAD_FOLDER']),
+            ["/v/{}".format(k) for k in os.listdir(app.config['UPLOAD_FOLDER'])]))
+    return render_template('/index.html', message=message, file_list=files)
+
+@app.route('/phnumbers/upload', methods=['POST'])
+@auth.login_required
+def upload_csv():
+    op_file_names = proces_ipf(request.files['file'])
+    return jsonify(
+        status='OK',
+        message="Upload successful",
+        result="/v/{}".format(op_file_names)
+    )
+
 
 def for_public_data(out):
     new_out = {}
