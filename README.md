@@ -20,9 +20,9 @@ and reject numbers that are invalid. (27831234567 is the correct format for this
  OUTPUT:
 1.)  Display results by the following means
 ```
-     - a. Acceptable numbers
-     - b. Corrected numbers
-     - c. Invalid numbers
+a. Acceptable numbers
+b. Corrected numbers
+c. Invalid numbers
 ```
 2.)   Validate the individual number whether or not the number is valid
 
