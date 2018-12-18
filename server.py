@@ -93,14 +93,6 @@ def dir_listing(req_path):
     files = os.listdir(abs_path)
     return render_template('file_list.html', files=files)
 
-def for_public_data(out):
-    new_out = {}
-    for field in out:
-        if field == 'filename':
-            new_out['uri'] = [url_for('upload_csv', filename=fname, _external=True) for fname in out[field]]
-        else:
-            new_out[field] = out[field]
-    return new_out
 
 @app.route('/phnumbers/status/<phonenumber>',  methods=['GET'])
 @auth.login_required
