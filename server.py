@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, request, jsonify, make_response, abort, redirect, \
                     render_template, url_for, send_file, send_from_directory
 from werkzeug.utils import secure_filename
@@ -54,6 +55,11 @@ def index():
     message = "Upload a csv file"
     if request.method == 'POST':
         op_file_names = proces_ipf(request.files['file'])
+        if STORAGE_TYPE == 'db':
+            for fn in op_file_names:
+                data = get_files_fromDB(fn)
+                with open(UPLOAD_FOLDER+fn+'.json', 'w') as f:
+                    json.dump(data, f)
         return redirect(url_for('index'))
     files = dict(
         zip(os.listdir(app.config['UPLOAD_FOLDER']),
@@ -107,7 +113,7 @@ def return_file(file_name):
     if STORAGE_TYPE == 'file':
         resp = get_files_fromDir(file_name)
     else:
-        resp = get_files_fromDB(file_name)
+        resp = jsonify(get_files_fromDB(file_name))
     if resp:
         return resp
     else:
@@ -124,8 +130,7 @@ def get_files_fromDB(fname = None):
     jsonout = []
     for i in phcollection.find({},{'_id':False}):
         jsonout.append(i)
-        print(jsonout)
-    return jsonify({'result':jsonout})
+    return {'result': jsonout}
 
 def process_input(file):
     ph_obj = processUserInput(file, process_data=True, storage_type=STORAGE_TYPE)
