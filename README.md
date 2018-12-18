@@ -28,16 +28,20 @@ c. Invalid numbers
 
 ### Prerequisites
 
-pip install following packages
+A.) MongoDB Server
+B.) pip install following packages
 
 ```
 Flask==1.0.2
 Flask-HTTPAuth==3.2.4
+Flask-PyMongo==2.2.0
+pymongo==3.7.2
 phonenumbers==8.10.2
 ```
 
 ### Installing
 
+Start the MongoDB Demon and service.
 From terminal execute server.py. This will start the web service at 127.0.0.1 on port 5000.
 
 ### Accessing the Service
@@ -66,6 +70,8 @@ status: In progress
 ## Built With
 
 * [Flask](http://flask.pocoo.org/) - The web framework
+* [MongoDB](https://github.com/mongodb/mongo) - Phonenember Parsing.
+* [PyMongo](https://github.com/mongodb/mongo-python-driver/) - DB Connector
 * [PhoneNumbers](https://github.com/googlei18n/libphonenumber) - Phonenember Parsing.
 
 ## Authors
