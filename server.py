@@ -3,13 +3,20 @@ from flask import Flask, request, jsonify, make_response, abort, redirect, \
                     render_template, url_for, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_httpauth import HTTPBasicAuth
+from flask_pymongo import PyMongo
 from processInput import processUserInput
 from validation import validatePhoneNumber
 
+STORAGE_TYPE = 'db'   #available values 'file', 'db'
 app = Flask(__name__)
+
 UPLOAD_FOLDER = './upload/'
 ALLOWED_EXTENSIONS = set(['csv','json'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+app.config['MONGO_DBNAME'] = 'app_phnumbers'
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/app_phnumbers'
+mongo = PyMongo(app)
 
 
 auth = HTTPBasicAuth()
@@ -80,7 +87,6 @@ def dir_listing(req_path):
     files = os.listdir(abs_path)
     return render_template('file_list.html', files=files)
 
-
 def for_public_data(out):
     new_out = {}
     for field in out:
@@ -98,21 +104,40 @@ def phnumber_status(phonenumber):
 @app.route('/phnumbers/file_status/<file_name>',  methods=['GET'])
 @auth.login_required
 def return_file(file_name):
-    if get_files(file_name):
-        return send_file(UPLOAD_FOLDER+file_name)
+    if STORAGE_TYPE == 'file':
+        resp = get_files_fromDir(file_name)
+    else:
+        resp = get_files_fromDB(file_name)
+    if resp:
+        return resp
     else:
         abort(404)
 
-def get_files(fname = None):
+def get_files_fromDir(fname = None):
     fnames = [file for file in os.listdir(UPLOAD_FOLDER)]
-    if fname:
-        return fname in fnames
+    if fnames and fname and fname in fnames:
+        return send_file(UPLOAD_FOLDER+fname)
     else:
-        return fnames
+        return None
+def get_files_fromDB(fname = None):
+    phcollection = mongo.db[fname]
+    jsonout = []
+    for i in phcollection.find({},{'_id':False}):
+        jsonout.append(i)
+        print(jsonout)
+    return jsonify({'result':jsonout})
 
 def process_input(file):
-    ph_obj = processUserInput(file, process_data=True, storage_type='file')
-    return ph_obj.read_from_CSV_File()
+    ph_obj = processUserInput(file, process_data=True, storage_type=STORAGE_TYPE)
+    if STORAGE_TYPE == 'file':
+        return ph_obj.read_from_CSV_File()
+    else:
+        resp = ph_obj.read_from_CSV_File()
+        for fname in resp.keys():
+            phcollection  = mongo.db[fname]
+            for row in resp[fname]:
+                phcollection.insert(row)
+        return resp.keys()
 
 def get_phnumber_status(phnumber):
     val_obj = validatePhoneNumber(countryCode="ZA")
