@@ -7,7 +7,7 @@ op_file = "output_file.csv"
 COUNTRY_CODE = 'ZA'
 
 class processUserInput():
-    def __init__(self, input_file, process_data=False, storage_type='file'):
+    def __init__(self, input_file, process_data=False, storage_type=None):
         self.input_file = input_file
         self.process_data = process_data
         self.storage_type=storage_type
@@ -38,7 +38,7 @@ class processUserInput():
                     file_names.append(op_file)
                     op_data = resp[fname]
                     self.fields = op_data[0].keys()
-                    self.write_to_CSV_File(op_data, output_file = op_file)
+                    self.write_to_CSV_File(op_data, output_file=op_file)
             return file_names
         else:
             return resp
