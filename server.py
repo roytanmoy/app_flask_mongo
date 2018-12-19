@@ -52,7 +52,6 @@ def proces_ipf(submitted_file):
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    message = "Upload a csv file"
     if request.method == 'POST':
         op_file_names = proces_ipf(request.files['file'])
         if STORAGE_TYPE == 'db':
@@ -61,10 +60,23 @@ def index():
                 with open(UPLOAD_FOLDER+fn+'.json', 'w') as f:
                     json.dump(data, f)
         return redirect(url_for('index'))
+
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.mkdir(UPLOAD_FOLDER)
     files = dict(
         zip(os.listdir(app.config['UPLOAD_FOLDER']),
-            ["/v/{}".format(k) for k in os.listdir(app.config['UPLOAD_FOLDER'])]))
+            ["{}".format(k) for k in os.listdir(app.config['UPLOAD_FOLDER'])]))
+    message = "Upload a csv file"
     return render_template('/index.html', message=message, file_list=files)
+
+@app.route('/<path:req_path>')
+def dir_listing(req_path):
+    abs_path = os.path.join(UPLOAD_FOLDER, req_path)
+    # Check if path is a file and serve
+    if os.path.isfile(abs_path):
+        return send_file(abs_path, mimetype="application/json")
+    return render_template('/index.html')
+
 
 @app.route('/phnumbers/upload', methods=['POST'])
 @auth.login_required
@@ -82,17 +94,6 @@ def upload_csv():
         message="Upload successful",
         result="{}".format(result)
     )
-
-@app.route('/<path:req_path>')
-def dir_listing(req_path):
-    abs_path = os.path.join(UPLOAD_FOLDER, req_path)
-    # Check if path is a file and serve
-    if os.path.isfile(abs_path):
-        return send_file(abs_path)
-    # Show directory contents
-    files = os.listdir(abs_path)
-    return render_template('file_list.html', files=files)
-
 
 @app.route('/phnumbers/status/<phonenumber>',  methods=['GET'])
 @auth.login_required
@@ -117,6 +118,7 @@ def get_files_fromDir(fname = None):
         return send_file(UPLOAD_FOLDER+fname)
     else:
         return None
+
 def get_files_fromDB(fname = None):
     phcollection = mongo.db[fname]
     jsonout = []
