@@ -1,14 +1,16 @@
 <!doctype html>
 <title>Upload new File</title>
 
-<hr>
+<head>
+    <link rel="shortcut icon" href="#" />
+</head>
 
 <h1>{{message}}</h1>
+
 <form action="" method=post enctype=multipart/form-data>
     <p><input type=file name=file>
         <input type=submit value=Upload>
 </form>
-
 
 <ul>
     {% for file in file_list %}

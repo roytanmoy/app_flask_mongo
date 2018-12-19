@@ -1,5 +1,12 @@
+<!doctype html>
+<title>Upload new File</title>
+
+<head>
+    <link rel="shortcut icon" href="#" />
+</head>
+
 <ul>
-    {% for file in files %}
+    {% for file in file_list %}
     <li><a href="{{ file }}">{{ file }}</a></li>
     {% endfor %}
 </ul>
