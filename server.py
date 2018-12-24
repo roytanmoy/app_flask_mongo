@@ -4,7 +4,8 @@ from flask import Flask, request, jsonify, make_response, abort, redirect, \
                     render_template, url_for, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_httpauth import HTTPBasicAuth
-from flask_pymongo import PyMongo
+#from flask_pymongo import PyMongo
+from pymongo import MongoClient    ###for docker-composition
 from processInput import processUserInput
 from validation import validatePhoneNumber
 
@@ -15,9 +16,14 @@ UPLOAD_FOLDER = './upload/'
 ALLOWED_EXTENSIONS = set(['csv','json'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-app.config['MONGO_DBNAME'] = 'app_phnumbers'
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/app_phnumbers'
-mongo = PyMongo(app)
+###for docker-composition
+#app.config['MONGO_DBNAME'] = 'app_phnumbers'
+#app.config['MONGO_URI'] = 'mongodb://localhost:27017/app_phnumbers'
+#mongo = PyMongo(app)
+client = MongoClient(
+    os.environ['DB_PORT_27017_TCP_ADDR'],
+    27017)
+mongo = client.app_phnumbers
 
 
 auth = HTTPBasicAuth()
@@ -144,4 +150,4 @@ def get_phnumber_status(phnumber):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
